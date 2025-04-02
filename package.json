@@ -1,0 +1,25 @@
+{
+  "name": "my-node-app",
+  "version": "1.0.0",
+  "description": "A simple Node.js app with Express for deployment on Heroku",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "heroku-postbuild": "npm install"
+  },
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^4.17.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/my-node-app.git"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "heroku"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

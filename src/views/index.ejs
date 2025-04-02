@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your contract is next</title>
+  <meta name="og-image" content="/img/og.png">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76A2YpOJ4XEY3eU+usA2fnF6rdkz5iUOdQ2z1HTH+8z3e1d6tSTFjcJfYd2a6sU" crossorigin="anonymous"></script>
+</head>     
+<body>
+    <div class="container-fluid p-5">
+        <div class="row flex-column">
+          <h1>Your contract is next</h1>
+          <p class="lead">A searchable list of federal contracts cut by DOGE</p>
+          <p>Source: <span class="badge bg-primary text-white">DOGE API</span></p>
+  
+      
+        <!-- Search Field -->
+        <div class="mb-3">
+          <input type="text" id="searchInput" class="form-control" placeholder="Search contracts by Agency or Vendor...">
+        </div>
+      
+        <!-- Total Value -->
+         <span><strong>Total Value:</strong></span>
+        <div id="totalValue" class="mt-3 mb-3">
+            <span>$0.00</span>
+          </div>
+        <table id="contractsTable" class="table table-striped">
+          <thead>
+            <tr>
+              <th>Agency</th>
+              <th>Vendor</th>
+              <th>Value</th>
+              <th>FPDS Link</th>
+              <th>Deleted Date</th>
+              <th>Savings</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Data will be dynamically inserted here -->
+          </tbody>
+        </table>
+      
+        
+      </div>
+      
+      <script>
+        // Fetch data from the API
+        fetch('/api/contracts') // Replace with your actual API endpoint
+          .then(response => response.json())
+          .then(data => {
+            const tableBody = document.querySelector('#contractsTable tbody');
+            const searchInput = document.querySelector('#searchInput');
+            const totalValueElement = document.querySelector('#totalValue');
+            let contracts = data.flatMap(entry => entry.result?.contracts || []);
+      
+            // Function to format numbers as currency
+            const formatCurrency = (value) => {
+              return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+              }).format(value || 0);
+            };
+      
+            // Function to calculate the total value
+            const calculateTotalValue = (filteredContracts) => {
+              return filteredContracts.reduce((sum, contract) => sum + (contract.value || 0), 0);
+            };
+      
+            // Function to render the table rows
+            const renderTable = (filteredContracts) => {
+              tableBody.innerHTML = ''; // Clear existing rows
+              filteredContracts.forEach(contract => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                  <td>${contract.agency || 'N/A'}</td>
+                  <td>${contract.vendor || 'N/A'}</td>
+                  <td>${formatCurrency(contract.value)}</td>
+                  <td><a href="${contract.fpds_link || '#'}" target="_blank">Link</a></td>
+                  <td>${contract.deleted_date || 'N/A'}</td>
+                  <td>${formatCurrency(contract.savings)}</td>
+                `;
+                tableBody.appendChild(row);
+              });
+      
+              // Update the total value
+              const totalValue = calculateTotalValue(filteredContracts);
+              totalValueElement.textContent = `${formatCurrency(totalValue)}`;
+            };
+      
+            // Initial render
+            renderTable(contracts);
+      
+            // Add search functionality (only filters by agency and vendor)
+            searchInput.addEventListener('input', (event) => {
+              const searchTerm = event.target.value.toLowerCase();
+              const filteredContracts = contracts.filter(contract =>
+                (contract.agency || '').toLowerCase().includes(searchTerm) ||
+                (contract.vendor || '').toLowerCase().includes(searchTerm)
+              );
+              renderTable(filteredContracts);
+            });
+          })
+          .catch(error => console.error('Error fetching contracts:', error));
+      </script>
